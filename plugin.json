@@ -1,0 +1,30 @@
+{
+  "slug": "Kalliste",
+  "name": "Kalliste",
+  "version": "2.0.0",
+  "license": "GPL-3.0-or-later",
+  "brand": "Kalliste",
+  "author": "GabTiorbi",
+  "modules": [
+    {
+      "slug": "KArp",
+      "name": "K-ARP",
+      "description": "Polyphonic chord arpeggiator",
+      "tags": [
+        "Sequencer" ,
+		"Arpeggiator" ,
+		"Polyphonic"
+		
+      ]
+    },
+    {
+  "slug": "KScene",
+  "name": "K-SCENE",
+  "description": "Scene expander for K-ARP",
+  "tags": [
+    "Utility",
+	"Expander"
+  ]
+}
+  ]
+}
