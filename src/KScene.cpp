@@ -1025,10 +1025,12 @@ struct KSceneLogoWidget : TransparentWidget {
 		const float logoW = 687.2638f;
 		const float logoH = 898.1945f;
 
-		const float wMm = 8.5f;
+		// Logo légèrement réduit et remonté pour mieux s’aligner
+		// visuellement avec le logo de K-ARP lorsque les modules sont accolés.
+		const float wMm = 7.8f;
 		const float hMm = wMm * (logoH / logoW);
-		const float xMm = 3.7f;
-		const float yMm = 109.0f;
+		const float xMm = 4.05f;
+		const float yMm = 107.8f;
 
 		nvgSave(args.vg);
 		nvgTranslate(args.vg, mm2px(xMm), mm2px(yMm));
