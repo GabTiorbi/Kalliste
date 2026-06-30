@@ -5,6 +5,7 @@
   "license": "GPL-3.0-or-later",
   "brand": "Kalliste",
   "author": "GabTiorbi",
+  "sourceUrl": "https://github.com/GabTiorbi/Kalliste", 
   "modules": [
     {
       "slug": "KArp",
