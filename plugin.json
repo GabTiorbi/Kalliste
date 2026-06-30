@@ -1,7 +1,7 @@
 {
   "slug": "Kalliste",
   "name": "Kalliste",
-  "version": "2.0.0",
+  "version": "1.0.0",
   "license": "GPL-3.0-or-later",
   "brand": "Kalliste",
   "author": "GabTiorbi",
@@ -20,7 +20,7 @@
     {
   "slug": "KScene",
   "name": "K-SCENE",
-  "description": "Scene expander for K-ARP",
+  "description": "Store, recall and interpolate K-ARP scenes",
   "tags": [
     "Utility",
 	"Expander"
