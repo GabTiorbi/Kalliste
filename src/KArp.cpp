@@ -147,6 +147,7 @@ struct KArp : Module, KArpSceneHost {
 	float clockOutPulseTimer = 0.f;
 	float sceneChordGateMuteTimer = 0.f;
 	float sceneChordGateHoldTimer = 0.f;
+	float arpGateMuteTimer = 0.f;
 	bool pendingSceneStartRetrigger = false;
 
 	// Derniere sortie ARP non vide.
@@ -390,6 +391,7 @@ struct KArp : Module, KArpSceneHost {
 		// puis une gate tenue pendant toute sa durée.
 		sceneChordGateMuteTimer = 0.010f;
 		sceneChordGateHoldTimer = 60.f / bpm;
+		arpGateMuteTimer = 0.010f;
 
 		if (isRunning()) {
 			chordClockSeen = true;
@@ -444,16 +446,57 @@ void resetChordSequencer() {
         setActiveChordFromSequencer(0);
         activeArpStep = 0;
         firstClockAfterStart = true;
-        chordClockSeen = false;
-        haveClockPeriod = false;
         timeSinceLastChordClock = 0.f;
-        lastChordClockPeriod = 0.f;
-        chordGateRetriggerTimer = 0.f;
-        clockOutPulseTimer = 0.f;
-        sceneChordGateMuteTimer = 0.f;
-        sceneChordGateHoldTimer = 0.f;
         pendingSceneStartRetrigger = false;
         sceneCycleCounter = 0;
+        lastArpVoiceCount = 0;
+        for (int v = 0; v < 6; v++) {
+                lastArpVoltages[v] = 0.f;
+        }
+
+        // RST SEQ pendant RUN doit relancer immediatement le cycle courant.
+        // Sinon les index reviennent bien a 0, mais chordClockSeen reste false
+        // et le premier cycle apres reset devient muet jusqu'a la prochaine
+        // avance naturelle du sequenceur.
+        if (isRunning()) {
+                float bpm = params[BPM_PARAM].getValue();
+                if (bpm < 1.f) {
+                        bpm = 1.f;
+                }
+                if (bpm > 300.f) {
+                        bpm = 300.f;
+                }
+
+                float chordPeriod = 60.f / bpm;
+                if (chordPeriod < 0.001f) {
+                        chordPeriod = 0.001f;
+                }
+
+                chordClockSeen = true;
+                haveClockPeriod = true;
+                lastChordClockPeriod = chordPeriod;
+
+                // Nouvelle impulsion d'horloge et bref re-trigger de CHORD GATE.
+                // ARP GATE redevient actif immediatement si la colonne 1 contient
+                // au moins une note.
+                clockOutPulseTimer = 0.005f;
+                chordGateRetriggerTimer = 0.005f;
+                sceneChordGateMuteTimer = 0.f;
+                sceneChordGateHoldTimer = 0.f;
+                // Bref silence force sur ARP GATE : il cree un vrai front montant
+                // pour rejouer les notes de la premiere colonne apres RST.
+                arpGateMuteTimer = 0.005f;
+        }
+        else {
+                chordClockSeen = false;
+                haveClockPeriod = false;
+                lastChordClockPeriod = 0.f;
+                chordGateRetriggerTimer = 0.f;
+                clockOutPulseTimer = 0.f;
+                sceneChordGateMuteTimer = 0.f;
+                sceneChordGateHoldTimer = 0.f;
+                arpGateMuteTimer = 0.f;
+        }
 }
 
 void advanceChordOnly() {
@@ -690,6 +733,7 @@ int buildActiveArpVoltages(float voltages[6]) {
 		clockOutPulseTimer = 0.f;
 		sceneChordGateMuteTimer = 0.f;
 		sceneChordGateHoldTimer = 0.f;
+		arpGateMuteTimer = 0.f;
 		pendingSceneStartRetrigger = false;
 		lastArpVoiceCount = 0;
 		for (int v = 0; v < 6; v++) {
@@ -792,6 +836,7 @@ int buildActiveArpVoltages(float voltages[6]) {
 			clockOutPulseTimer = 0.f;
 			sceneChordGateMuteTimer = 0.f;
 			sceneChordGateHoldTimer = 0.f;
+			arpGateMuteTimer = 0.f;
 			chordClockSeen = false;
 		}
 		else {
@@ -822,6 +867,13 @@ int buildActiveArpVoltages(float voltages[6]) {
 				sceneChordGateHoldTimer -= args.sampleTime;
 				if (sceneChordGateHoldTimer < 0.f) {
 					sceneChordGateHoldTimer = 0.f;
+				}
+			}
+
+			if (arpGateMuteTimer > 0.f) {
+				arpGateMuteTimer -= args.sampleTime;
+				if (arpGateMuteTimer < 0.f) {
+					arpGateMuteTimer = 0.f;
 				}
 			}
 
@@ -898,7 +950,7 @@ int buildActiveArpVoltages(float voltages[6]) {
 			}
 		}
 
-		float arpGateVoltage = (activeColumnHasNotes && arpSubGateHigh) ? 10.f : 0.f;
+		float arpGateVoltage = (activeColumnHasNotes && arpSubGateHigh && arpGateMuteTimer <= 0.f) ? 10.f : 0.f;
 
 		for (int voice = 0; voice < arpOutputVoiceCount; voice++) {
 			float voltage = activeColumnHasNotes ? arpVoltages[voice] : lastArpVoltages[voice];
