@@ -1148,6 +1148,47 @@ struct KSceneWidget : ModuleWidget {
 		}
 	}
 
+	bool isPointInsideSceneSlot(Vec p) {
+		static const float ROW_Y[8] = {45, 52, 59, 66, 73, 80, 87, 94};
+		static const float SLOT_X[2] = {6.6f, 17.3f};
+		const float slotW = 5.2f;
+		const float slotH = 5.2f;
+
+		for (int col = 0; col < 2; col++) {
+			for (int row = 0; row < 8; row++) {
+				float x = mm2px(SLOT_X[col]);
+				float y = mm2px(ROW_Y[row]);
+				float w = mm2px(slotW);
+				float h = mm2px(slotH);
+
+				if (p.x >= x && p.x <= x + w && p.y >= y && p.y <= y + h) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	void onButton(const event::Button& e) override {
+		if (e.action == GLFW_PRESS && e.button == GLFW_MOUSE_BUTTON_LEFT) {
+			KScene* kscene = dynamic_cast<KScene*>(this->module);
+			if (kscene && kscene->isStoreMode() && kscene->operationState != KScene::OP_NONE) {
+				// STORE: a click on a free area of the panel cancels
+				// the currently armed STORE or DELETE operation.
+				// Clicks inside Scene slots must keep their own behavior:
+				// same slot = confirm, another slot = cancel.
+				if (!isPointInsideSceneSlot(e.pos)) {
+					kscene->cancelOperation();
+					e.consume(this);
+					return;
+				}
+			}
+		}
+
+		ModuleWidget::onButton(e);
+	}
+
 	KSceneWidget(KScene* module) {
 		setModule(module);
 		setPanel(createPanel(asset::plugin(pluginInstance, "res/KScene.svg")));
