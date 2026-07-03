@@ -129,4 +129,6 @@ No formal knowledge of harmony is required to enjoy the creative possibilities o
 
 # License
 
-To be completed.
+Kalliste is open-source software released under the GNU General Public License v3.0 (GPL-3.0).
+
+See the LICENSE file for the complete license terms.
