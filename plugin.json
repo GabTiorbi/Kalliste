@@ -21,7 +21,7 @@
     {
   "slug": "KScene",
   "name": "K-SCENE",
-  "description": "Store, recall and interpolate K-ARP scenes",
+  "description": "Store, organize and recall K-ARP scenes",
   "tags": [
     "Utility",
 	"Expander"
