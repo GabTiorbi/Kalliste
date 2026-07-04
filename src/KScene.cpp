@@ -382,6 +382,14 @@ struct KScene : Module {
 		// Mode STORE.
 		// K-SCENE ne rappelle/applique jamais de scène ici.
 		// K-ARP reste libre : RUN/STOP/RST SEQ/édition restent possibles.
+		// Si K-ARP est en lecture, STORE reste un mode d'écoute et d'édition
+		// en temps réel : l'armement d'écriture ou de suppression est neutralisé.
+		// Ctrl+Clic conserve son rôle de rappel explicite de scène via handleSlotCtrlClick().
+		if (isKArpRunning()) {
+			cancelOperation();
+			return;
+		}
+
 		if (operationState == OP_WRITE_ARMED) {
 			if (armedSlot == index) {
 				if (canWriteSlot(index) && !isKArpRunning()) {
@@ -428,6 +436,13 @@ struct KScene : Module {
 	void handleSlotLongPress(int index) {
 		if (index < 0 || index >= 16) return;
 		if (!isStoreMode()) return;
+
+		// En STORE avec K-ARP en lecture, les scènes peuvent être écoutées
+		// et modifiées en temps réel, mais l'armement de suppression est désactivé.
+		if (isKArpRunning()) {
+			cancelOperation();
+			return;
+		}
 
 		// Une opération déjà armée doit d'abord être annulée.
 		// Un appui long ailleurs annule, mais n'arme rien.
