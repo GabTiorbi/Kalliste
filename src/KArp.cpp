@@ -2,6 +2,7 @@
 #include "plugin.hpp"
 #include <cmath>
 #include <cstdio>
+#include <chrono>
 
 struct KArp : Module, KArpSceneHost {
 	enum ChordType {
@@ -265,6 +266,46 @@ struct KArp : Module, KArpSceneHost {
 		}
 
 		return getRootVoltage(root, octave) + ((float)interval / 12.f);
+	}
+
+
+	void getChordNoteName(int index, int noteIndex, char* buffer, size_t bufferSize) {
+		static const char* NOTE_NAMES[12] = {
+			"C", "C#", "D", "D#", "E", "F",
+			"F#", "G", "G#", "A", "A#", "B"
+		};
+
+		if (!buffer || bufferSize == 0) {
+			return;
+		}
+
+		if (index < 0) index = 0;
+		if (index > 15) index = 15;
+		if (noteIndex < 0) noteIndex = 0;
+		if (noteIndex > 5) noteIndex = 5;
+
+		int root = getChordRoot(index);
+		int type = chordTypes[index];
+		int interval = 0;
+
+		switch (noteIndex) {
+			case 0: interval = 0; break;
+			case 1: interval = getChordThirdInterval(type); break;
+			case 2: interval = getChordFifthInterval(type); break;
+			case 3: interval = 12; break;
+			case 4: interval = getChordThirdInterval(type) + 12; break;
+			case 5: interval = getChordFifthInterval(type) + 12; break;
+		}
+
+		int absoluteSemitone = chordOctaves[index] * 12 + root + interval;
+		int note = absoluteSemitone % 12;
+		int octave = absoluteSemitone / 12;
+		if (note < 0) {
+			note += 12;
+			octave--;
+		}
+
+		snprintf(buffer, bufferSize, "%s%d", NOTE_NAMES[note], octave);
 	}
 
 	bool isRunning() {
@@ -1416,8 +1457,59 @@ struct KArpResetSeqButton : Widget {
 	}
 };
 
+struct KArpNotePreview : TransparentWidget {
+	std::shared_ptr<Font> font;
+	char noteText[8] = "";
+	Vec anchor;
+	std::chrono::steady_clock::time_point visibleUntil;
+
+	KArpNotePreview() {
+		box.size = mm2px(Vec(162.56f, 128.5f));
+		font = APP->window->loadFont(asset::system("res/fonts/DejaVuSans-Bold.ttf"));
+		if (!font) {
+			font = APP->window->loadFont(asset::system("res/fonts/DejaVuSans.ttf"));
+		}
+	}
+
+	void showNote(const char* text, Vec position) {
+		snprintf(noteText, sizeof(noteText), "%s", text ? text : "");
+		anchor = position;
+		visibleUntil = std::chrono::steady_clock::now() + std::chrono::seconds(1);
+	}
+
+	void draw(const DrawArgs& args) override {
+		if (!font || noteText[0] == '\0' || std::chrono::steady_clock::now() >= visibleUntil) {
+			return;
+		}
+
+		const float bubbleWidth = mm2px(12.0f);
+		const float bubbleHeight = mm2px(6.0f);
+		float x = anchor.x - bubbleWidth * 0.5f;
+		float y = anchor.y - mm2px(8.0f);
+
+		// La bulle reste entièrement à l'intérieur du panneau.
+		x = clamp(x, mm2px(1.0f), box.size.x - bubbleWidth - mm2px(1.0f));
+		y = clamp(y, mm2px(1.0f), box.size.y - bubbleHeight - mm2px(1.0f));
+
+		nvgBeginPath(args.vg);
+		nvgRoundedRect(args.vg, x, y, bubbleWidth, bubbleHeight, mm2px(1.25f));
+		nvgFillColor(args.vg, nvgRGBA(4, 12, 14, 235));
+		nvgFill(args.vg);
+		nvgStrokeColor(args.vg, nvgRGBA(120, 235, 255, 230));
+		nvgStrokeWidth(args.vg, 1.0f);
+		nvgStroke(args.vg);
+
+		nvgFontFaceId(args.vg, font->handle);
+		nvgFontSize(args.vg, 13.0f);
+		nvgTextAlign(args.vg, NVG_ALIGN_CENTER | NVG_ALIGN_MIDDLE);
+		nvgFillColor(args.vg, nvgRGB(235, 252, 255));
+		nvgText(args.vg, x + bubbleWidth * 0.5f, y + bubbleHeight * 0.5f + 0.25f, noteText, NULL);
+	}
+};
+
 struct KArpMatrixButton : Widget {
 	KArp* module = NULL;
+	KArpNotePreview* notePreview = NULL;
 	int row = 0;   // 0 = R, 1 = 3, 2 = 5, 3 = ↑R, 4 = ↑3, 5 = ↑5
 	int column = 0;
 
@@ -1492,10 +1584,24 @@ if (currentStep && inSequence) {
 
 	void onButton(const event::Button& e) override {
 		if (module && e.action == GLFW_PRESS && e.button == GLFW_MOUSE_BUTTON_LEFT) {
-			// Edition de la matrice d'arpege.
-			// Les colonnes hors ARP LEN restent visibles mais non editables.
-			if (row >= 0 && row < 6 && column >= 0 && column < 16 && column < module->getArpLen()) {
-				module->arpMatrix[row][column] = !module->arpMatrix[row][column];
+			if (row >= 0 && row < 6 && column >= 0 && column < 16) {
+				// Ctrl-clic : consultation de la note, sans modifier l'état de la cellule.
+				// La colonne de la matrice utilise l'accord de même numéro.
+				if (e.mods & RACK_MOD_CTRL) {
+					char noteName[8];
+					module->getChordNoteName(column, row, noteName, sizeof(noteName));
+					if (notePreview) {
+						notePreview->showNote(noteName, box.pos.plus(box.size.mult(0.5f)));
+					}
+					e.consume(this);
+					return;
+				}
+
+				// Clic simple : édition normale de la matrice.
+				// Les colonnes hors ARP LEN restent visibles mais non éditables.
+				if (column < module->getArpLen()) {
+					module->arpMatrix[row][column] = !module->arpMatrix[row][column];
+				}
 			}
 
 			e.consume(this);
@@ -2027,6 +2133,9 @@ struct KArpWidget : ModuleWidget {
 			addChild(modeButton);
 		}
 
+		// Affichage éphémère de la note consultée par Ctrl-clic.
+		KArpNotePreview* notePreview = new KArpNotePreview();
+
 		// Chapitre 5E-1 : matrice d'arpege 6 x 16, visuelle uniquement.
 		// Coordonnees a ajuster apres capture si necessaire.
 		static const float MATRIX_ROW_Y[6] = {101.0f, 95.0f, 89.0f, 83.0f, 77.0f, 71.0f};
@@ -2038,6 +2147,7 @@ struct KArpWidget : ModuleWidget {
 				);
 
 				matrixButton->module = module;
+				matrixButton->notePreview = notePreview;
 				matrixButton->row = row;
 				matrixButton->column = col;
 
@@ -2045,6 +2155,8 @@ struct KArpWidget : ModuleWidget {
 			}
 		}
 
+		// Ajouté après les boutons pour que le texte reste au premier plan.
+		addChild(notePreview);
 
 		KArpRunButton* runButton = createWidgetCentered<KArpRunButton>(
 			mm2px(Vec(11.2, 59.5))
