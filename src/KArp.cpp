@@ -1458,17 +1458,12 @@ struct KArpResetSeqButton : Widget {
 };
 
 struct KArpNotePreview : TransparentWidget {
-	std::shared_ptr<Font> font;
 	char noteText[8] = "";
 	Vec anchor;
 	std::chrono::steady_clock::time_point visibleUntil;
 
 	KArpNotePreview() {
 		box.size = mm2px(Vec(162.56f, 128.5f));
-		font = APP->window->loadFont(asset::system("res/fonts/DejaVuSans-Bold.ttf"));
-		if (!font) {
-			font = APP->window->loadFont(asset::system("res/fonts/DejaVuSans.ttf"));
-		}
 	}
 
 	void showNote(const char* text, Vec position) {
@@ -1478,7 +1473,15 @@ struct KArpNotePreview : TransparentWidget {
 	}
 
 	void draw(const DrawArgs& args) override {
-		if (!font || noteText[0] == '\0' || std::chrono::steady_clock::now() >= visibleUntil) {
+		if (noteText[0] == '\0' || std::chrono::steady_clock::now() >= visibleUntil) {
+			return;
+		}
+
+		std::shared_ptr<Font> font = APP->window->loadFont(asset::system("res/fonts/DejaVuSans-Bold.ttf"));
+		if (!font) {
+			font = APP->window->loadFont(asset::system("res/fonts/DejaVuSans.ttf"));
+		}
+		if (!font) {
 			return;
 		}
 
@@ -1613,16 +1616,15 @@ if (currentStep && inSequence) {
 };
 
 struct KArpMatrixLabels : TransparentWidget {
-	std::shared_ptr<Font> font;
 
 KArp* module = NULL;
 
 KArpMatrixLabels(KArp* module) {
         this->module = module;
-        font = APP->window->loadFont(asset::system("res/fonts/DejaVuSans.ttf"));
 }
 
 	void draw(const DrawArgs& args) override {
+		std::shared_ptr<Font> font = APP->window->loadFont(asset::system("res/fonts/DejaVuSans.ttf"));
 		if (!font) {
 			return;
 		}
@@ -1673,13 +1675,9 @@ static void drawBoldText(NVGcontext* vg, float x, float y, const char* text) {
 }
 
 struct KArpPortLabels : TransparentWidget {
-	std::shared_ptr<Font> font;
-
-	KArpPortLabels() {
-		font = APP->window->loadFont(asset::system("res/fonts/DejaVuSans.ttf"));
-	}
 
 	void draw(const DrawArgs& args) override {
+		std::shared_ptr<Font> font = APP->window->loadFont(asset::system("res/fonts/DejaVuSans.ttf"));
 		if (!font) {
 			return;
 		}
@@ -1743,13 +1741,9 @@ struct KArpPortLabels : TransparentWidget {
 };
 
 struct KArpTopLabels : TransparentWidget {
-	std::shared_ptr<Font> font;
-
-	KArpTopLabels() {
-		font = APP->window->loadFont(asset::system("res/fonts/DejaVuSans.ttf"));
-	}
 
 	void draw(const DrawArgs& args) override {
+		std::shared_ptr<Font> font = APP->window->loadFont(asset::system("res/fonts/DejaVuSans.ttf"));
 		if (!font) {
 			return;
 		}
@@ -1774,14 +1768,12 @@ struct KArpTopLabels : TransparentWidget {
 
 struct KArpLengthDisplays : TransparentWidget {
 	KArp* module = NULL;
-	std::shared_ptr<Font> font;
 
 	KArpLengthDisplays(KArp* module) {
 		this->module = module;
-		font = APP->window->loadFont(asset::system("res/fonts/DejaVuSans.ttf"));
 	}
 
-	void drawDisplay(const DrawArgs& args, float x, float y, float w, float h, const char* value, float fontSize, NVGcolor textColor = nvgRGB(150, 255, 150), NVGcolor strokeColor = nvgRGB(60, 100, 75)) {
+	void drawDisplay(const DrawArgs& args, const std::shared_ptr<Font>& font, float x, float y, float w, float h, const char* value, float fontSize, NVGcolor textColor = nvgRGB(150, 255, 150), NVGcolor strokeColor = nvgRGB(60, 100, 75)) {
 		nvgBeginPath(args.vg);
 		nvgRoundedRect(args.vg, mm2px(x), mm2px(y), mm2px(w), mm2px(h), mm2px(1.5));
 		nvgFillColor(args.vg, nvgRGB(4, 12, 8));
@@ -1808,6 +1800,8 @@ struct KArpLengthDisplays : TransparentWidget {
 	}
 
 	void draw(const DrawArgs& args) override {
+		std::shared_ptr<Font> font = APP->window->loadFont(asset::system("res/fonts/DejaVuSans.ttf"));
+
 		static const char* NOTE_NAMES[12] = {
 			"C", "C#", "D", "D#", "E", "F",
 			"F#", "G", "G#", "A", "A#", "B"
@@ -1858,10 +1852,10 @@ struct KArpLengthDisplays : TransparentWidget {
 			snprintf(activeChordText, sizeof(activeChordText), "%d - %s%d", activeChord + 1, noteName, activeOctave);
 		}
 
-		drawDisplay(args, 7.0f, 18.0f, 13.0f, 8.0f, bpmText, 14.0f, nvgRGB(150, 255, 150), nvgRGB(60, 100, 75));
-		drawDisplay(args, 33.0f, 18.0f, 13.0f, 8.0f, arpText, 14.0f, nvgRGB(120, 220, 255), nvgRGB(45, 95, 115));
-		drawDisplay(args, 77.5f, 18.0f, 13.0f, 8.0f, chordText, 14.0f);
-		drawDisplay(args, 99.5f, 18.0f, 33.0f, 8.0f, activeChordText, 14.0f);
+		drawDisplay(args, font, 7.0f, 18.0f, 13.0f, 8.0f, bpmText, 14.0f, nvgRGB(150, 255, 150), nvgRGB(60, 100, 75));
+		drawDisplay(args, font, 33.0f, 18.0f, 13.0f, 8.0f, arpText, 14.0f, nvgRGB(120, 220, 255), nvgRGB(45, 95, 115));
+		drawDisplay(args, font, 77.5f, 18.0f, 13.0f, 8.0f, chordText, 14.0f);
+		drawDisplay(args, font, 99.5f, 18.0f, 33.0f, 8.0f, activeChordText, 14.0f);
 	}
 };
 
@@ -2040,16 +2034,12 @@ struct KArpPanelScrews : TransparentWidget {
 };
 
 struct KArpTitleLabel : TransparentWidget {
-	std::shared_ptr<Font> font;
 
-	KArpTitleLabel() {
-		font = APP->window->loadFont(asset::system("res/fonts/DejaVuSans-Bold.ttf"));
+	void draw(const DrawArgs& args) override {
+		std::shared_ptr<Font> font = APP->window->loadFont(asset::system("res/fonts/DejaVuSans-Bold.ttf"));
 		if (!font) {
 			font = APP->window->loadFont(asset::system("res/fonts/DejaVuSans.ttf"));
 		}
-	}
-
-	void draw(const DrawArgs& args) override {
 		if (!font) {
 			return;
 		}

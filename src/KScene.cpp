@@ -743,15 +743,13 @@ struct KScenePanelScrew : TransparentWidget {
 };
 
 struct KSceneTitleLabel : TransparentWidget {
-	std::shared_ptr<Font> font;
-
 	KSceneTitleLabel() {
 		box.size = mm2px(Vec(30.48f, 128.5f));
-		font = APP->window->loadFont(asset::system("res/fonts/DejaVuSans-Bold.ttf"));
-		if (!font) font = APP->window->loadFont(asset::system("res/fonts/DejaVuSans.ttf"));
 	}
 
 	void draw(const DrawArgs& args) override {
+		std::shared_ptr<Font> font = APP->window->loadFont(asset::system("res/fonts/DejaVuSans-Bold.ttf"));
+		if (!font) font = APP->window->loadFont(asset::system("res/fonts/DejaVuSans.ttf"));
 		if (!font) return;
 
 		nvgFontFaceId(args.vg, font->handle);
@@ -823,15 +821,14 @@ struct KSceneSwitch : app::ParamWidget {
 
 struct KSceneModeLabels : TransparentWidget {
 	KScene* module = NULL;
-	std::shared_ptr<Font> font;
 
 	KSceneModeLabels(KScene* module) {
 		this->module = module;
 		box.size = mm2px(Vec(30.48f, 128.5f));
-		font = APP->window->loadFont(asset::system("res/fonts/DejaVuSans.ttf"));
 	}
 
 	void draw(const DrawArgs& args) override {
+		std::shared_ptr<Font> font = APP->window->loadFont(asset::system("res/fonts/DejaVuSans.ttf"));
 		if (!font) return;
 
 		nvgFontFaceId(args.vg, font->handle);
@@ -1009,14 +1006,12 @@ struct KSceneSlotLed : Widget {
 };
 
 struct KSceneBottomLabels : TransparentWidget {
-	std::shared_ptr<Font> font;
-
 	KSceneBottomLabels() {
 		box.size = mm2px(Vec(30.48f, 128.5f));
-		font = APP->window->loadFont(asset::system("res/fonts/DejaVuSans.ttf"));
 	}
 
 	void draw(const DrawArgs& args) override {
+		std::shared_ptr<Font> font = APP->window->loadFont(asset::system("res/fonts/DejaVuSans.ttf"));
 		if (!font) return;
 
 		nvgFontFaceId(args.vg, font->handle);
