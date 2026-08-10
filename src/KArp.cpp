@@ -1126,11 +1126,10 @@ struct KArpChordSliderActiveBackground : TransparentWidget {
 	}
 
 	void draw(const DrawArgs& args) override {
-		if (!module) {
-			return;
-		}
-
-		int chordLen = module->getChordLen();
+		// In Rack's module browser and Library previews, module can be null.
+		// Draw the default 16 active chord columns in that case instead of
+		// leaving this cosmetic background blank.
+		int chordLen = module ? module->getChordLen() : 16;
 		if (chordLen < 1) chordLen = 1;
 		if (chordLen > 16) chordLen = 16;
 
