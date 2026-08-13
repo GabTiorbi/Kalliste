@@ -8,12 +8,18 @@ Kalliste lets you create harmonic progressions by ear or with musical knowledge 
 
 Rather than generating harmony automatically, Kalliste provides an interactive environment where chords, arpeggios and musical structure are entirely defined by the user, while preserving the flexibility and spontaneity of modular synthesis.
 
+## Quick Start
+
+**[Open the Kalliste Quick Start Guide (PDF)](docs/Kalliste-Quick-Start.pdf)**
+
+A concise introduction to K-ARP and K-SCENE, covering the essential controls and workflow.
+
 ![KArp and KScene](images/Kalliste.png)
 
 The plugin currently includes two complementary modules:
 
-- **K-ARP** — an interactive harmonic sequencer
-- **K-SCENE** — a scene manager for organizing complete musical sequences
+* **K-ARP** — an interactive harmonic sequencer
+* **K-SCENE** — a scene manager for organizing complete musical sequences
 
 Together, they provide an intuitive environment for composing, experimenting and performing harmonic progressions.
 
@@ -21,14 +27,14 @@ Together, they provide an intuitive environment for composing, experimenting and
 
 K-ARP combines two independent sequencers:
 
-- a Chord Sequencer
-- a Visual Arpeggio Matrix
+* a Chord Sequencer
+* a Visual Arpeggio Matrix
 
 Each chord may have its own:
 
-- root note
-- chord quality (Major, Minor, Sus2, Sus4, Diminished or Augmented)
-- octave
+* root note
+* chord quality (Major, Minor, Sus2, Sus4, Diminished or Augmented)
+* octave
 
 The Visual Arpeggio Matrix lets you build arpeggios simply by clicking the notes you want to hear.
 
@@ -42,19 +48,19 @@ K-SCENE stores complete K-ARP configurations as scenes.
 
 Each scene contains:
 
-- tempo
-- chord progression
-- chord qualities
-- octave settings
-- arpeggio matrix
-- sequence lengths
+* tempo
+* chord progression
+* chord qualities
+* octave settings
+* arpeggio matrix
+* sequence lengths
 
 Scenes can be:
 
-- recalled manually
-- played automatically
-- looped indefinitely
-- edited while listening
+* recalled manually
+* played automatically
+* looped indefinitely
+* edited while listening
 
 This makes it possible to build complete harmonic arrangements directly inside VCV Rack.
 
@@ -64,9 +70,9 @@ One of Kalliste's most distinctive features is its real-time workflow.
 
 While a scene is playing, you can modify:
 
-- chords
-- arpeggio patterns
-- tempo
+* chords
+* arpeggio patterns
+* tempo
 
 Every change is heard immediately.
 
@@ -78,29 +84,29 @@ Kalliste therefore becomes a genuine composition instrument rather than a simple
 
 Kalliste integrates naturally into modular patches through:
 
-- RUN input
-- RESET input
-- Clock output
-- Gate outputs
-- Root CV output
-- Chord CV/Gate outputs
-- Arpeggio CV/Gate outputs
-- End Of Cycle (EOC) output
+* RUN input
+* RESET input
+* Clock output
+* Gate outputs
+* Root CV output
+* Chord CV/Gate outputs
+* Arpeggio CV/Gate outputs
+* End Of Cycle (EOC) output
 
 It can easily synchronize sequencers, drum modules and other clock-driven devices.
 
 ## Main Features
 
-- Interactive harmonic sequencing
-- User-programmable chord progressions
-- Visual programmable arpeggio matrix
-- Scene management
-- Manual and automatic playback
-- Real-time editing
-- External synchronization
-- User presets
-- Context menu utilities
-- Optimized composition workflow
+* Interactive harmonic sequencing
+* User-programmable chord progressions
+* Visual programmable arpeggio matrix
+* Scene management
+* Manual and automatic playback
+* Real-time editing
+* External synchronization
+* User presets
+* Context menu utilities
+* Optimized composition workflow
 
 ## Designed for everyone
 
@@ -112,13 +118,9 @@ Beginners and hobbyists can simply experiment by ear, modifying chords and patte
 
 No formal knowledge of harmony is required to enjoy the creative possibilities offered by Kalliste.
 
-## Documentation
-
-A Quick Start guide is included in the assets of every GitHub Release.
-
 ## Compatibility
 
-- VCV Rack 2
+* VCV Rack 2
 
 ## License
 
